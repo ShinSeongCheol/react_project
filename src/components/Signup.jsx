@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 
-const checkValidation = (formData) => {
+const validateForm = (formData) => {
   const result = {
     isSuccess: true,
     text: "",
@@ -16,15 +16,22 @@ const checkValidation = (formData) => {
 
       if (key === "id") {
         result.text = "아이디를 입력해주세요!";
-        break;
+        return result;
       } else if (key === "password") {
         result.text = "비밀번호를 입력해주세요!";
-        break;
+        return result;
       } else if (key === "password_confirm") {
         result.text = "비밀번호 확인을 입력해주세요!";
-        break;
+        return result;
       }
     }
+  }
+
+  // 비밀번호 똑같은지 확인
+  if (formData.password !== formData.password_confirm) {
+    result.isSuccess = false;
+    result.text = "입력한 비밀번호가 다릅니다!";
+    return result;
   }
 
   return result;
@@ -47,20 +54,11 @@ const Signup = () => {
   const onSubmitForm = (e) => {
     e.preventDefault();
 
-    let { isSuccess, text } = checkValidation(formData);
+    let { isSuccess, text } = validateForm(formData);
     if (!isSuccess) {
       Swal.fire({
         icon: "warning",
         text,
-        confirmButtonText: "확인",
-      });
-      return;
-    }
-
-    if (formData.password !== formData.password_confirm) {
-      Swal.fire({
-        icon: "warning",
-        text: "입력한 비밀번호가 다릅니다!",
         confirmButtonText: "확인",
       });
       return;
