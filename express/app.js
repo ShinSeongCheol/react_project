@@ -8,7 +8,7 @@ var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 
 let dotenv = require('dotenv');
-dotenv.config({path: path.resolve((process.env.NODE_ENV == 'development') ? 'env/.development.env' : 'env/.production.env')});
+dotenv.config({path: path.resolve((process.env.NODE_ENV == 'development') ? 'env/development.env' : 'env/production.env')});
 
 var app = express();
 
