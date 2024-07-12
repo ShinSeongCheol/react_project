@@ -2,40 +2,7 @@ import "./Signup.css";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
-
-const validateForm = (formData) => {
-  const result = {
-    isSuccess: true,
-    text: "",
-  };
-
-  // 데이터 입력확인
-  for (let key of Object.keys(formData)) {
-    if (!formData[key]) {
-      result.isSuccess = false;
-
-      if (key === "id") {
-        result.text = "아이디를 입력해주세요!";
-        return result;
-      } else if (key === "password") {
-        result.text = "비밀번호를 입력해주세요!";
-        return result;
-      } else if (key === "password_confirm") {
-        result.text = "비밀번호 확인을 입력해주세요!";
-        return result;
-      }
-    }
-  }
-
-  // 비밀번호 똑같은지 확인
-  if (formData.password !== formData.password_confirm) {
-    result.isSuccess = false;
-    result.text = "입력한 비밀번호가 다릅니다!";
-    return result;
-  }
-
-  return result;
-};
+import axios from "axios";
 
 const Signup = () => {
   const nav = useNavigate();
@@ -54,27 +21,34 @@ const Signup = () => {
   const onSubmitForm = (e) => {
     e.preventDefault();
 
-    let { isSuccess, text } = validateForm(formData);
-    if (!isSuccess) {
-      Swal.fire({
-        icon: "warning",
-        text,
-        confirmButtonText: "확인",
+    axios
+      .post(`${location.protocol}//${location.hostname}:3000/users/register`, {
+        ...formData,
+      })
+      .then((res) => {
+        if (!res.data.isSuccess) {
+          Swal.fire({
+            icon: "warning",
+            text: res.data.message,
+            confirmButtonText: "확인",
+          });
+          return;
+        } else {
+          Swal.fire({
+            icon: "success",
+            text: res.data.message,
+            confirmButtonText: "확인",
+            allowOutsideClick: false,
+          }).then((result) => {
+            if (result.isConfirmed) {
+              nav("/login");
+            }
+          });
+        }
+      })
+      .catch((err) => {
+        console.log(err);
       });
-      return;
-    }
-
-    sessionStorage.setItem("user", JSON.stringify(formData));
-    Swal.fire({
-      icon: "success",
-      text: "회원가입 되었습니다!",
-      confirmButtonText: "확인",
-      allowOutsideClick: false,
-    }).then((result) => {
-      if (result.isConfirmed) {
-        nav("/login");
-      }
-    });
   };
 
   return (
