@@ -2,6 +2,7 @@ import "./Login.css";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
+import axios from "axios";
 
 const Login = () => {
   const nav = useNavigate();
@@ -15,25 +16,29 @@ const Login = () => {
   const onSubmitForm = (e) => {
     e.preventDefault();
 
-    sessionStorage.getItem("user");
-
-    const { id, password } = sessionStorage.getItem("user")
-      ? JSON.parse(sessionStorage.getItem("user"))
-      : { id: null, password: null };
-
-    if (formData.id === id && formData.password === password) {
-      Swal.fire({
-        icon: "success",
-        text: "로그인 성공했습니다!",
-        confirmButtonText: "확인",
+    axios
+      .post(`${location.protocol}//${location.hostname}:3000/users/login`, {
+        ...formData,
+      })
+      .then((result) => {
+        console.log(result.data);
+        if (result.data.isSuccess) {
+          Swal.fire({
+            icon: "success",
+            text: result.data.message,
+            confirmButtonText: "확인",
+          });
+        } else {
+          Swal.fire({
+            icon: "error",
+            text: result.data.message,
+            confirmButtonText: "확인",
+          });
+        }
+      })
+      .catch((err) => {
+        console.log(err);
       });
-    } else {
-      Swal.fire({
-        icon: "error",
-        text: "아이디와 비밀번호를 확인해주세요!",
-        confirmButtonText: "확인",
-      });
-    }
   };
 
   return (

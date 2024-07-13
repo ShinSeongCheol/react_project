@@ -2,17 +2,34 @@ var express = require("express");
 var router = express.Router();
 const pool = require("../database/pool");
 
-router.use((req, res, next) => {
-  res.setHeader(
-    "Access-Control-Allow-Origin",
-    `${req.protocol}://${req.hostname}:5173`
-  );
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+router.post("/login", (req, res) => {
+  const result = {
+    isSuccess: false,
+    message: "",
+  };
 
-  next();
+  pool.getConnectionPool((conn) => {
+    const sql =
+      "SELECT id, password FROM app.Users WHERE id = ? AND password = ?";
+    const params = [req.body.id, req.body.password];
+    conn.query(sql, params, (err, row) => {
+      if (err) {
+        result.message = "로그인 실패했습니다.";
+        return res.send(result);
+      }
+
+      if (row.length == 0) {
+        result.message = "아이디와 비밀번호를 확인해주세요!";
+        return res.send(result);
+      }
+
+      result.isSuccess = true;
+      result.message = "로그인 성공!"
+      return res.send(result);
+    });
+    conn.release();
+  });
 });
-
-router.post("/login", (req, res) => {});
 
 router.post("/register", (req, res) => {
   const result = {
@@ -44,10 +61,10 @@ router.post("/register", (req, res) => {
 
   pool.getConnectionPool((conn) => {
     const sql = "INSERT INTO app.Users (id, password) VALUES(?, ?)";
-    const params = [req.body.id, req.body.password]
+    const params = [req.body.id, req.body.password];
     conn.query(sql, params, (err, row) => {
       if (err) {
-        if(err.code == "ER_DUP_ENTRY"){
+        if (err.code == "ER_DUP_ENTRY") {
           result.message = "아이디가 이미 존재합니다!";
         }
         return res.send(result);
