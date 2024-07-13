@@ -1,6 +1,7 @@
 var express = require("express");
 var router = express.Router();
 const pool = require("../database/pool");
+const CryptoJS = require("crypto-js")
 
 router.post("/login", (req, res) => {
   const result = {
@@ -11,6 +12,7 @@ router.post("/login", (req, res) => {
   pool.getConnectionPool((conn) => {
     const sql =
       "SELECT id, password FROM app.Users WHERE id = ? AND password = ?";
+    req.body.password = CryptoJS.SHA256(req.body.password).toString();
     const params = [req.body.id, req.body.password];
     conn.query(sql, params, (err, row) => {
       if (err) {
@@ -61,6 +63,7 @@ router.post("/register", (req, res) => {
 
   pool.getConnectionPool((conn) => {
     const sql = "INSERT INTO app.Users (id, password) VALUES(?, ?)";
+    req.body.password = CryptoJS.SHA256(req.body.password).toString();
     const params = [req.body.id, req.body.password];
     conn.query(sql, params, (err, row) => {
       if (err) {
